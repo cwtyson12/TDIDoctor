@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="16dp"
+    android:paddingTop="16dp"
+    tools:context=".GaugesFragment">
+
+
+    <TextView
+        android:id="@+id/RPMTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RPM: "
+        android:textSize="36sp" />
+
+    <TextView
+        android:id="@+id/RPMValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0.00"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/BoostTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Boost: "
+        android:textSize="36sp" />
+
+    <TextView
+        android:id="@+id/BoostValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0.00"
+        android:textSize="24sp" />
+
+    <TextView
+    android:id="@+id/SpeedTextView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Speed: "
+    android:textSize="36sp" />
+
+    <TextView
+        android:id="@+id/SpeedValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0.00"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/ThrottlePositionTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Throttle Position: "
+        android:textSize="36sp" />
+
+    <TextView
+        android:id="@+id/ThrottlePositionValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0.00"
+        android:textSize="24sp" />
+
+    <Button
+        android:id="@+id/createBluetoothButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Bluetooth Class" />
+
+    <Button
+        android:id="@+id/connectBluetoothButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Connect to Bluetooth Device" />
+
+    <Button
+        android:id="@+id/updateValuesButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Update Values" />
+
+</LinearLayout>
