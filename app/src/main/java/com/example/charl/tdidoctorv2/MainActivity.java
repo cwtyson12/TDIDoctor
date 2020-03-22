@@ -1,8 +1,10 @@
 package com.example.charl.tdidoctorv2;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import android.widget.Toast;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.tabs.TabItem;
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,11 +35,16 @@ public class MainActivity extends AppCompatActivity {
         history = (TabItem) findViewById(R.id.History);
 
         viewPager = (ViewPager2) findViewById(R.id.viewpager);
-        viewPager.setUserInputEnabled(false);   //disable swiping
+        viewPager.setUserInputEnabled(true);   //disable swiping
+
 
         pageAdapter = new PageAdapter(getSupportFragmentManager(), getLifecycle(), tabLayout.getTabCount());
 
         viewPager.setAdapter(pageAdapter);
+
+
+
+        //tabLayout.setupWithViewPager(viewPager);
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override

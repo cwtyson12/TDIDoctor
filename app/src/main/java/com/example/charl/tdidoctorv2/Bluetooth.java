@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.security.ConfirmationNotAvailableException;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -16,6 +17,8 @@ import br.ufrn.imd.obd.commands.engine.RPMCommand;
 import br.ufrn.imd.obd.commands.engine.SpeedCommand;
 import br.ufrn.imd.obd.commands.engine.ThrottlePositionCommand;
 import br.ufrn.imd.obd.commands.pressure.BarometricPressureCommand;
+import br.ufrn.imd.obd.commands.pressure.IntakeManifoldPressureCommand;
+import br.ufrn.imd.obd.commands.pressure.PressureCommand;
 import br.ufrn.imd.obd.commands.protocol.EchoOffCommand;
 import br.ufrn.imd.obd.commands.protocol.LineFeedOffCommand;
 import br.ufrn.imd.obd.commands.protocol.SelectProtocolCommand;
@@ -124,7 +127,7 @@ public class Bluetooth {
         obdCommands.add(new BarometricPressureCommand());
         obdCommands.add(new SpeedCommand());
         obdCommands.add(new ThrottlePositionCommand());
-        ThrottlePositionCommand f = new ThrottlePositionCommand();
+        obdCommands.add(new IntakeManifoldPressureCommand());
         return obdCommands;
     }
 
@@ -150,6 +153,50 @@ public class Bluetooth {
             float percentage = throttlePosition.getPercentage();
             String x = "" + percentage;
             return x;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    //Boost = (Intake manifold absolute pressure) - (absolute barometric pressure)
+    public String getBoost(){
+
+        BarometricPressureCommand barometricPressure = new BarometricPressureCommand();
+        IntakeManifoldPressureCommand intakeManifoldPressure = new IntakeManifoldPressureCommand();
+
+        try {
+            intakeManifoldPressure.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
+            barometricPressure.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
+            String barometricResult = barometricPressure.getCalculatedResult();
+            String intakePressure = intakeManifoldPressure.getCalculatedResult();
+            double result;
+
+            try{
+                double barometricDouble = Double.parseDouble(barometricResult);
+                double intakeDouble = Double.parseDouble(intakePressure);
+                result = intakeDouble - barometricDouble;
+                return "" + result;
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public String getSpeed(){
+        SpeedCommand speed = new SpeedCommand();
+        try {
+            speed.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
+            String calculatedResult = speed.getCalculatedResult();
+            return calculatedResult;
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
