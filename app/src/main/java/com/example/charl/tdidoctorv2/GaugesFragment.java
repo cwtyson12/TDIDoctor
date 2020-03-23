@@ -1,5 +1,6 @@
 package com.example.charl.tdidoctorv2;
 
+import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,6 +13,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +27,7 @@ import org.w3c.dom.Text;
  * A simple {@link Fragment} subclass.
  */
 public class GaugesFragment extends Fragment {
+    LinearLayout layout;
     TextView tvRPM;
     TextView tvBoost;
     TextView tvSpeed;
@@ -32,6 +35,7 @@ public class GaugesFragment extends Fragment {
     Button updateValuesButton;
     Button connectBluetoothButton;
     Button createBluetoothButton;
+    Button detect;
     Bluetooth bluetooth;
     public GaugesFragment() {
         // Required empty public constructor
@@ -43,9 +47,11 @@ public class GaugesFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_gauges, container, false);
+        layout = (LinearLayout) view.findViewById(R.id.gaugesLayout);
         updateValuesButton = (Button) view.findViewById(R.id.updateValuesButton);
         connectBluetoothButton = (Button) view.findViewById(R.id.connectBluetoothButton);
         createBluetoothButton = (Button) view.findViewById(R.id.createBluetoothButton);
+        detect = (Button) view.findViewById(R.id.detectButton);
         tvRPM = (TextView) view.findViewById(R.id.RPMValue);
         tvBoost = (TextView) view.findViewById(R.id.BoostValue);
         tvSpeed = (TextView) view.findViewById(R.id.SpeedValue);
@@ -84,6 +90,19 @@ public class GaugesFragment extends Fragment {
 
                 //String pos = bluetooth.getThrottlePosition();
                 // Toast.makeText(getActivity(), "Throttle Position: " + pos, Toast.LENGTH_LONG).show();
+            }
+        });
+
+        detect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean lspi = bluetooth.detectLSPI();
+                if(lspi){
+                    layout.setBackgroundColor(Color.RED);
+                }
+                else{
+                    layout.setBackgroundColor(Color.GREEN);
+                }
             }
         });
 

@@ -228,4 +228,30 @@ public class Bluetooth {
         }
         return "ERROR";
     }
+
+    //TODO update values in fragment as well
+    public Boolean detectLSPI(){
+        SpeedCommand speed = new SpeedCommand();
+        RPMCommand rpm = new RPMCommand();
+        ThrottlePositionCommand throttle = new ThrottlePositionCommand();
+        try{
+            speed.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
+            rpm.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
+            throttle.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
+
+            double speedValue = speed.getImperialSpeed();
+            int rpmValue = rpm.getRPM();
+            double throttleValue = throttle.getPercentage();
+
+            if(speedValue > 55. && rpmValue < 2500 && throttleValue > 30.){
+                return true;
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }
