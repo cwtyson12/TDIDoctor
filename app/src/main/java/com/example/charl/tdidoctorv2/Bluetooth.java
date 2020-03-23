@@ -243,7 +243,7 @@ public class Bluetooth {
             int rpmValue = rpm.getRPM();
             double throttleValue = throttle.getPercentage();
 
-            if(speedValue > 55. && rpmValue < 2500 && throttleValue > 30.){
+            if(speedValue > 55. && rpmValue < 3000 && throttleValue > 30.){
                 return true;
             }
         } catch (InterruptedException e) {
