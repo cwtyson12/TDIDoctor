@@ -71,23 +71,19 @@
         android:id="@+id/createBluetoothButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create Bluetooth Class" />
-
-    <Button
-        android:id="@+id/connectBluetoothButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Connect to Bluetooth Device" />
+        android:text="Initialize Bluetooth Connection" />
 
     <Button
         android:id="@+id/updateValuesButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Update Values" />
-    <Button
-        android:id="@+id/detectButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Test detection"/>
+        android:enabled="false"
+        android:text="Begin Tracking" />35
+<!--    <Button-->
+<!--        android:id="@+id/detectButton"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:enabled="false"-->
+<!--        android:text="Test LSPI detection"/>-->
 
 </LinearLayout>

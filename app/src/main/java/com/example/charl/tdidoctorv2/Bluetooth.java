@@ -25,6 +25,7 @@ import br.ufrn.imd.obd.commands.protocol.SelectProtocolCommand;
 import br.ufrn.imd.obd.commands.protocol.TimeoutCommand;
 import br.ufrn.imd.obd.commands.temperature.AmbientAirTemperatureCommand;
 import br.ufrn.imd.obd.enums.ObdProtocols;
+import br.ufrn.imd.obd.exceptions.UnknownErrorException;
 
 public class Bluetooth {
 
@@ -77,16 +78,16 @@ public class Bluetooth {
         return m_OBDDevice != null;
     }
 
-    public void connect(){
+    public boolean connect(){
         if(m_OBDDevice == null){
             Log.e(TAG," connect: device not set");
-            return;
+            return false;
         }
 
         if (isConnected()) {
             if (m_Socket.getRemoteDevice().getAddress().equals(m_OBDDevice.getAddress())) {
                 Log.d(TAG, "connect: Already connected, no need to change socket...");
-                return;
+                return true;
             } else {
                 Log.d(TAG, "connect: Connected to another device. Disconnecting...");
                 disconnect();
@@ -96,8 +97,10 @@ public class Bluetooth {
         try{
             m_Socket = m_OBDDevice.createRfcommSocketToServiceRecord(UUID_USE);
             m_Socket.connect();
+            return true;
         } catch (IOException e) {
             Log.e(TAG, " connect: unable to connect to socket");
+            return false;
         }
     }
 
@@ -135,12 +138,18 @@ public class Bluetooth {
         RPMCommand rpm = new RPMCommand();
         try {
             rpm.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-            String formattedResult = rpm.getFormattedResult();
-            String resultUnit = rpm.getResultUnit();
-            return formattedResult;
+            int rpmValue = rpm.getRPM();
+            String result = rpmValue + " RPM";
+            return result;
+
+//            String formattedResult = rpm.getFormattedResult();
+//            String resultUnit = rpm.getResultUnit();
+//            return formattedResult;
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch(UnknownErrorException e){
             e.printStackTrace();
         }
         return "";
@@ -150,14 +159,15 @@ public class Bluetooth {
         ThrottlePositionCommand throttlePosition = new ThrottlePositionCommand();
         try {
             throttlePosition.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-            float percentage = throttlePosition.getPercentage();
-            String x = "" + percentage;
-            return x;
+            return throttlePosition.getFormattedResult();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } catch(UnknownErrorException e){
+            e.printStackTrace();
         }
+
         return "";
     }
 
@@ -168,17 +178,25 @@ public class Bluetooth {
         IntakeManifoldPressureCommand intakeManifoldPressure = new IntakeManifoldPressureCommand();
 
         try {
+            intakeManifoldPressure.setImperialUnits(true);
+            barometricPressure.setImperialUnits(true);
+
             intakeManifoldPressure.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
             barometricPressure.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
+            float barometricImperial = barometricPressure.getImperialUnit();
+            float intakeImperial = intakeManifoldPressure.getImperialUnit();
             String barometricResult = barometricPressure.getCalculatedResult();
             String intakePressure = intakeManifoldPressure.getCalculatedResult();
             double result;
+
 
             try{
                 double barometricDouble = Double.parseDouble(barometricResult);
                 double intakeDouble = Double.parseDouble(intakePressure);
                 result = intakeDouble - barometricDouble;
-                return "" + result;
+                if(result < 0.00)
+                    result = 0.00;
+                return String.format("%.2f PSI", result);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
@@ -186,6 +204,8 @@ public class Bluetooth {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch(UnknownErrorException e){
             e.printStackTrace();
         }
         return "";
@@ -195,11 +215,14 @@ public class Bluetooth {
         SpeedCommand speed = new SpeedCommand();
         try {
             speed.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-            String calculatedResult = speed.getCalculatedResult();
+            //String calculatedResult = speed.getImperialSpeed() + " MPH";
+            String calculatedResult = String.format("%.2f MPH", speed.getImperialSpeed());
             return calculatedResult;
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch(UnknownErrorException e){
             e.printStackTrace();
         }
         return "";
@@ -243,7 +266,7 @@ public class Bluetooth {
             int rpmValue = rpm.getRPM();
             double throttleValue = throttle.getPercentage();
 
-            if(speedValue > 55. && rpmValue < 3000 && throttleValue > 30.){
+            if(speedValue > 45. && rpmValue < 3000 && throttleValue > 30.){
                 return true;
             }
         } catch (InterruptedException e) {
@@ -253,5 +276,16 @@ public class Bluetooth {
         }
 
         return false;
+    }
+
+    public void runEchoOffCommand() {
+        EchoOffCommand echoOff = new EchoOffCommand();
+        try {
+            echoOff.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
