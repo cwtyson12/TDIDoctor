@@ -67,23 +67,29 @@
         android:text="0.00"
         android:textSize="24sp" />
 
-    <Button
-        android:id="@+id/createBluetoothButton"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Initialize Bluetooth Connection" />
+        android:orientation="horizontal"
+        >
+        <Button
+            android:id="@+id/createBluetoothButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Initialize Bluetooth Connection" />
+        <ProgressBar
+            android:id="@+id/BluetoothProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="invisible" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/updateValuesButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:enabled="false"
-        android:text="Begin Tracking" />35
-<!--    <Button-->
-<!--        android:id="@+id/detectButton"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:enabled="false"-->
-<!--        android:text="Test LSPI detection"/>-->
+        android:text="Begin Tracking" />
 
 </LinearLayout>

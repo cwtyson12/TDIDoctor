@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.security.ConfirmationNotAvailableException;
 import android.util.Log;
 import android.widget.Toast;
@@ -51,7 +53,7 @@ public class Bluetooth {
             Toast.makeText(context, "BLUETOOTH ADAPTER NOT FOUND OR IS DISABLED", Toast.LENGTH_SHORT).show();
             return false;
         }
-        //Toast.makeText(context, "BLUETOOTH ADAPTER FOUND", Toast.LENGTH_SHORT).show();
+
 
         pairedDevices = m_bluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
@@ -61,15 +63,11 @@ public class Bluetooth {
                 if (name.contains("OBD")) {
                     m_OBDDevice = device;
                     uuid = device.getUuids()[0].toString();
-                    Toast.makeText(context, "UUID: " + uuid, Toast.LENGTH_LONG).show();
                     macAddress = hardwareAddress;
                     return true;
-
                 }
             }
         }
-        //TODO find out if this is necessary/good protocol
-        //m_bluetoothAdapter.cancelDiscovery();
 
         return false;
     }
@@ -141,10 +139,6 @@ public class Bluetooth {
             int rpmValue = rpm.getRPM();
             String result = rpmValue + " RPM";
             return result;
-
-//            String formattedResult = rpm.getFormattedResult();
-//            String resultUnit = rpm.getResultUnit();
-//            return formattedResult;
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -215,7 +209,6 @@ public class Bluetooth {
         SpeedCommand speed = new SpeedCommand();
         try {
             speed.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-            //String calculatedResult = speed.getImperialSpeed() + " MPH";
             String calculatedResult = String.format("%.2f MPH", speed.getImperialSpeed());
             return calculatedResult;
         } catch (IOException e) {
@@ -231,51 +224,6 @@ public class Bluetooth {
     public boolean readyToUpdate(){
         Log.d(TAG, "In ready to update");
         return (m_Socket != null && m_Socket.isConnected());
-    }
-
-    public String updateValues(Context context){
-        if(readyToUpdate()){
-            ObdCommandGroup obdCommands = getObdCommands();
-            Toast.makeText(context ,"In updateValues", Toast.LENGTH_SHORT).show();
-            while(m_Socket != null && m_Socket.isConnected()){
-                try {
-                    obdCommands.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-                    String formattedResult = obdCommands.getFormattedResult();
-                    return formattedResult;
-                } catch (IOException e) {
-                    Log.e(TAG, "IOException on updateValues()", e);
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "InterruptedException on updateValues()", e);
-                }
-            }
-        }
-        return "ERROR";
-    }
-
-    //TODO update values in fragment as well
-    public Boolean detectLSPI(){
-        SpeedCommand speed = new SpeedCommand();
-        RPMCommand rpm = new RPMCommand();
-        ThrottlePositionCommand throttle = new ThrottlePositionCommand();
-        try{
-            speed.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-            rpm.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-            throttle.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-
-            double speedValue = speed.getImperialSpeed();
-            int rpmValue = rpm.getRPM();
-            double throttleValue = throttle.getPercentage();
-
-            if(speedValue > 45. && rpmValue < 3000 && throttleValue > 30.){
-                return true;
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return false;
     }
 
     public void runEchoOffCommand() {

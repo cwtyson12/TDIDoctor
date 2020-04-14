@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,8 +37,8 @@ public class GaugesFragment extends Fragment {
     TextView tvThrottlePosition;
     Button updateValuesButton;
     Button createBluetoothButton;
-    Button detect;
     Bluetooth bluetooth;
+    ProgressBar bluetoothProgressBar;
     volatile boolean stopCollecting = false;
 
 
@@ -55,28 +56,55 @@ public class GaugesFragment extends Fragment {
         layout = (LinearLayout) view.findViewById(R.id.gaugesLayout);
         updateValuesButton = (Button) view.findViewById(R.id.updateValuesButton);
         createBluetoothButton = (Button) view.findViewById(R.id.createBluetoothButton);
-        //detect = (Button) view.findViewById(R.id.detectButton);
         tvRPM = (TextView) view.findViewById(R.id.RPMValue);
         tvBoost = (TextView) view.findViewById(R.id.BoostValue);
         tvSpeed = (TextView) view.findViewById(R.id.SpeedValue);
         tvThrottlePosition = (TextView) view.findViewById(R.id.ThrottlePositionValue);
+        bluetoothProgressBar = (ProgressBar) view.findViewById(R.id.BluetoothProgressBar);
 
         createBluetoothButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 bluetooth = new Bluetooth(getActivity());
-                bluetooth.setupDevice();
-                if(bluetooth.foundDevice()) {
-                    boolean ableToConnect = bluetooth.connect();
-                    if(!ableToConnect){
-                        Toast.makeText(getActivity(), "Unable to establish Bluetooth connection", Toast.LENGTH_LONG).show();
+                Thread thread = new Thread(){
+                    @Override
+                    public void run() {
+                        mainHandler.post(new Runnable(){
+                            @Override
+                            public void run() {
+                                bluetoothProgressBar.setVisibility(View.VISIBLE);
+                                createBluetoothButton.setEnabled(false);
+                            }
+                        });
+
+                        bluetooth.setupDevice();
+                        if(bluetooth.foundDevice()) {
+                            boolean ableToConnect = bluetooth.connect();
+                            if(!ableToConnect){
+                                mainHandler.post(new Runnable(){
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getActivity(), "Unable to establish Bluetooth connection", Toast.LENGTH_LONG).show();
+                                        bluetoothProgressBar.setVisibility(View.GONE);
+                                    }
+                                });
+                                //createBluetoothButton.setEnabled(true);
+                            }
+                            else{
+                                bluetooth.runEchoOffCommand();
+                                //updateValuesButton.setEnabled(true);
+                            }
+                            mainHandler.post(new Runnable(){
+                                @Override
+                                public void run() {
+                                    createBluetoothButton.setEnabled(!ableToConnect);
+                                    updateValuesButton.setEnabled(ableToConnect);
+                                }
+                            });
+                        }
                     }
-                    else{
-                        bluetooth.runEchoOffCommand();
-                        updateValuesButton.setEnabled(true);
-                        //detect.setEnabled(true);
-                    }
-                }
+                };
+                thread.start();
             }
         });
 
@@ -89,19 +117,6 @@ public class GaugesFragment extends Fragment {
                 new Thread(updateThread).start();
             }
         });
-
-//        detect.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                boolean lspi = bluetooth.detectLSPI();
-//                if(lspi){
-//                    layout.setBackgroundColor(Color.RED);
-//                }
-//                else{
-//                    layout.setBackgroundColor(Color.GREEN);
-//                }
-//            }
-//        });
 
         return view;
     }

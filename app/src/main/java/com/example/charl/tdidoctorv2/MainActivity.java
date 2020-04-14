@@ -42,10 +42,6 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager.setAdapter(pageAdapter);
 
-
-
-        //tabLayout.setupWithViewPager(viewPager);
-
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
