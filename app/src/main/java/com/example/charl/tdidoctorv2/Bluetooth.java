@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import br.ufrn.imd.obd.commands.ObdCommandGroup;
+import br.ufrn.imd.obd.commands.control.TroubleCodesCommand;
 import br.ufrn.imd.obd.commands.engine.RPMCommand;
 import br.ufrn.imd.obd.commands.engine.SpeedCommand;
 import br.ufrn.imd.obd.commands.engine.ThrottlePositionCommand;
@@ -28,6 +29,7 @@ import br.ufrn.imd.obd.commands.protocol.TimeoutCommand;
 import br.ufrn.imd.obd.commands.temperature.AmbientAirTemperatureCommand;
 import br.ufrn.imd.obd.enums.ObdProtocols;
 import br.ufrn.imd.obd.exceptions.UnknownErrorException;
+import br.ufrn.imd.obd.utils.TroubleCodeDescription;
 
 public class Bluetooth {
 
@@ -129,6 +131,9 @@ public class Bluetooth {
         obdCommands.add(new SpeedCommand());
         obdCommands.add(new ThrottlePositionCommand());
         obdCommands.add(new IntakeManifoldPressureCommand());
+
+        obdCommands.add(new TroubleCodesCommand());
+
         return obdCommands;
     }
 
@@ -235,5 +240,21 @@ public class Bluetooth {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getTroubleCodes(){
+        TroubleCodesCommand troubles = new TroubleCodesCommand();
+
+        try{
+            troubles.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
+            String result = troubles.getResult();
+
+            return result;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }

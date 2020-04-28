@@ -1,8 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/ExtrasLayout"
+    android:orientation="vertical"
+    android:paddingLeft="16dp"
+    android:paddingTop="16dp"
     tools:context=".HistoryFragment">
+    <com.jjoe64.graphview.GraphView
+        android:layout_width="wrap_content"
+        android:layout_height="200dip"
+        android:id="@+id/SpeedGraphView">
 
-</FrameLayout>
+    </com.jjoe64.graphview.GraphView>
+
+    <com.jjoe64.graphview.GraphView
+        android:layout_width="wrap_content"
+        android:layout_height="200dip"
+        android:layout_marginTop="16dp"
+        android:id="@+id/RPMGraphView">
+
+    </com.jjoe64.graphview.GraphView>
+
+    <Button
+        android:id="@+id/GetValuesButton"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="@string/GetDBValuesText"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/GetTroubleCodesButton"
+        android:text="Get Trouble Codes"/>
+
+</LinearLayout>

@@ -1,5 +1,7 @@
 package com.example.charl.tdidoctorv2;
 
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -25,6 +27,10 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import org.w3c.dom.Text;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,7 +45,9 @@ public class GaugesFragment extends Fragment {
     Button createBluetoothButton;
     Bluetooth bluetooth;
     ProgressBar bluetoothProgressBar;
-    volatile boolean stopCollecting = false;
+    volatile boolean stopCollecting = true;
+    DatabaseHandler dbh;
+    SQLiteDatabase sqLiteDatabase;
 
 
     private Handler mainHandler = new Handler();
@@ -61,6 +69,10 @@ public class GaugesFragment extends Fragment {
         tvSpeed = (TextView) view.findViewById(R.id.SpeedValue);
         tvThrottlePosition = (TextView) view.findViewById(R.id.ThrottlePositionValue);
         bluetoothProgressBar = (ProgressBar) view.findViewById(R.id.BluetoothProgressBar);
+
+        dbh = new DatabaseHandler(getActivity());
+        sqLiteDatabase = dbh.getWritableDatabase();
+        dbh.dropTables(sqLiteDatabase);
 
         createBluetoothButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,6 +104,12 @@ public class GaugesFragment extends Fragment {
                             }
                             else{
                                 bluetooth.runEchoOffCommand();
+                                mainHandler.post(new Runnable(){
+                                    @Override
+                                    public void run() {
+                                        bluetoothProgressBar.setVisibility(View.GONE);
+                                    }
+                                });
                                 //updateValuesButton.setEnabled(true);
                             }
                             mainHandler.post(new Runnable(){
@@ -112,9 +130,26 @@ public class GaugesFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 //TODO use volatile boolean to stop thread
-                stopCollecting = false;
-                UpdateThread updateThread = new UpdateThread();
-                new Thread(updateThread).start();
+                stopCollecting = !stopCollecting;
+
+                //stopCollecting = false;
+                if(!stopCollecting){
+                    updateValuesButton.setText("Stop Collecting");
+                    UpdateThread updateThread = new UpdateThread();
+                    new Thread(updateThread).start();
+
+                    String codes = bluetooth.getTroubleCodes();
+
+                    long currTime = new Date().getTime();
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss a", Locale.US);
+                    String dateTime = sdf.format(currTime);
+
+                    dbh.insertTroubleCodes(dateTime, codes);
+                }
+                else{
+                    updateValuesButton.setText("Begin Tracking");
+                }
             }
         });
 
@@ -176,28 +211,49 @@ public class GaugesFragment extends Fragment {
                     String speed = bluetooth.getSpeed();
                     String throttlePosition = bluetooth.getThrottlePosition();
 
+
                     //needs to be in handler
                     mainHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            if(!rpm.equals(""))
+                            if(!rpm.equals("")){
                                 tvRPM.setText(rpm);
+                            }
                             if(!boost.equals(""))
                                 tvBoost.setText(boost);
-                            if(!speed.equals(""))
+                            if(!speed.equals("")){
                                 tvSpeed.setText(speed);
+                            }
                             if(!throttlePosition.equals(""))
                             tvThrottlePosition.setText(throttlePosition);
 
                             boolean lspi = detectLSPINotUpdatingValues();
                             if(lspi){
-                                layout.setBackgroundColor(Color.RED);
+                                layout.setBackgroundColor(getResources().getColor(R.color.LSPI));
                             }
                             else{
-                                layout.setBackgroundColor(Color.GREEN);
+                                tvRPM.setTextColor(getResources().getColor(R.color.noLSPI));
+                                tvBoost.setTextColor(getResources().getColor(R.color.noLSPI));
+                                tvSpeed .setTextColor(getResources().getColor(R.color.noLSPI));
                             }
                         }
                     });
+
+                    //update in DB here
+                    if(!speed.equals("") && !rpm.equals("")){
+                        long time = new Date().getTime();
+
+                        String justSpeed = speed.substring(0, speed.indexOf(' '));
+                        double speedDouble = Double.parseDouble(justSpeed);
+
+                        String justRPM = rpm.substring(0, rpm.indexOf(' '));
+                        Log.d("GaugesFragment", "JUSTRPM: " + justRPM);
+                        int rpmInt = Integer.parseInt(justRPM);
+
+                        dbh.insertToDatabase(time, speedDouble, rpmInt);
+
+                    }
+
                     numIterations++;
 
 
@@ -207,6 +263,10 @@ public class GaugesFragment extends Fragment {
                 }
 
             }
+        }
+
+        public void insertData(){
+
         }
     }
 }
