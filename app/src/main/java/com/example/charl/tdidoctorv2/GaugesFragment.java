@@ -100,7 +100,6 @@ public class GaugesFragment extends Fragment {
                                         bluetoothProgressBar.setVisibility(View.GONE);
                                     }
                                 });
-                                //createBluetoothButton.setEnabled(true);
                             }
                             else{
                                 bluetooth.runEchoOffCommand();
@@ -110,7 +109,6 @@ public class GaugesFragment extends Fragment {
                                         bluetoothProgressBar.setVisibility(View.GONE);
                                     }
                                 });
-                                //updateValuesButton.setEnabled(true);
                             }
                             mainHandler.post(new Runnable(){
                                 @Override
@@ -129,10 +127,8 @@ public class GaugesFragment extends Fragment {
         updateValuesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO use volatile boolean to stop thread
                 stopCollecting = !stopCollecting;
 
-                //stopCollecting = false;
                 if(!stopCollecting){
                     updateValuesButton.setText("Stop Collecting");
                     UpdateThread updateThread = new UpdateThread();
@@ -202,7 +198,7 @@ public class GaugesFragment extends Fragment {
             boolean doLoop = true;
             while(doLoop){
                 try {
-                    if(numIterations == NUM_ITERATIONS_TO_RUN || stopCollecting)  //want to not run indefinitely for now
+                    if(numIterations == NUM_ITERATIONS_TO_RUN || stopCollecting)
                         doLoop = false;
                     Thread.sleep(WAIT_TIME);
 
@@ -211,8 +207,6 @@ public class GaugesFragment extends Fragment {
                     String speed = bluetooth.getSpeed();
                     String throttlePosition = bluetooth.getThrottlePosition();
 
-
-                    //needs to be in handler
                     mainHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -232,6 +226,7 @@ public class GaugesFragment extends Fragment {
                                 layout.setBackgroundColor(getResources().getColor(R.color.LSPI));
                             }
                             else{
+                                layout.setBackgroundColor(Color.WHITE);
                                 tvRPM.setTextColor(getResources().getColor(R.color.noLSPI));
                                 tvBoost.setTextColor(getResources().getColor(R.color.noLSPI));
                                 tvSpeed .setTextColor(getResources().getColor(R.color.noLSPI));
@@ -239,7 +234,6 @@ public class GaugesFragment extends Fragment {
                         }
                     });
 
-                    //update in DB here
                     if(!speed.equals("") && !rpm.equals("")){
                         long time = new Date().getTime();
 

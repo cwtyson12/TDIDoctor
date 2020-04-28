@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                //Toast.makeText(MainActivity.this, "onTabSelected called, tab=" + tab.getPosition(), Toast.LENGTH_SHORT).show();
                 viewPager.setCurrentItem(tab.getPosition());
                 if(tab.getPosition() == 0)
                     pageAdapter.notifyDataSetChanged();
