@@ -4,13 +4,11 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
-import android.security.ConfirmationNotAvailableException;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,7 +19,6 @@ import br.ufrn.imd.obd.commands.engine.SpeedCommand;
 import br.ufrn.imd.obd.commands.engine.ThrottlePositionCommand;
 import br.ufrn.imd.obd.commands.pressure.BarometricPressureCommand;
 import br.ufrn.imd.obd.commands.pressure.IntakeManifoldPressureCommand;
-import br.ufrn.imd.obd.commands.pressure.PressureCommand;
 import br.ufrn.imd.obd.commands.protocol.EchoOffCommand;
 import br.ufrn.imd.obd.commands.protocol.LineFeedOffCommand;
 import br.ufrn.imd.obd.commands.protocol.SelectProtocolCommand;
@@ -29,31 +26,34 @@ import br.ufrn.imd.obd.commands.protocol.TimeoutCommand;
 import br.ufrn.imd.obd.commands.temperature.AmbientAirTemperatureCommand;
 import br.ufrn.imd.obd.enums.ObdProtocols;
 import br.ufrn.imd.obd.exceptions.UnknownErrorException;
-import br.ufrn.imd.obd.utils.TroubleCodeDescription;
 
+
+/**
+ *  Used to control all Bluetooth connection and data retrieval code.
+ */
 public class Bluetooth {
 
     private Context context;
     private final String TAG = "Bluetooth";
-    private final int TIMEOUT = 500;
-    protected BluetoothAdapter m_bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private BluetoothDevice m_OBDDevice = null;
     private BluetoothSocket m_Socket = null;
-    private String uuid;
-    private String macAddress;
     private static final UUID UUID_USE = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     Bluetooth(Context cntxt) {
         context = cntxt;
     }
 
-    public boolean setupDevice() {
-        m_bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    /**
+     * Initializes Bluetooth information in the application and checks if any
+     * valid OBD-II devices are currently connected to the phone.
+     */
+    public void setupDevice() {
+        BluetoothAdapter m_bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices;
 
         if (m_bluetoothAdapter == null || !m_bluetoothAdapter.isEnabled()) {
             Toast.makeText(context, "BLUETOOTH ADAPTER NOT FOUND OR IS DISABLED", Toast.LENGTH_SHORT).show();
-            return false;
+            return;
         }
 
 
@@ -64,20 +64,26 @@ public class Bluetooth {
                 String hardwareAddress = device.getAddress();
                 if (name.contains("OBD")) {
                     m_OBDDevice = device;
-                    uuid = device.getUuids()[0].toString();
-                    macAddress = hardwareAddress;
-                    return true;
+                    String uuid = device.getUuids()[0].toString();
+                    return;
                 }
             }
         }
 
-        return false;
     }
 
+    /**
+     * Determines whether or not a Bluetooth OBD-II device is connected.
+     * @return true if a device is connected, false otherwise
+     */
     public boolean foundDevice(){
         return m_OBDDevice != null;
     }
 
+    /**
+     * Conneccts the application to the OBD-II adapter.
+     * @return true if connection established and valid, false otherwise
+     */
     public boolean connect(){
         if(m_OBDDevice == null){
             Log.e(TAG," connect: device not set");
@@ -104,11 +110,18 @@ public class Bluetooth {
         }
     }
 
-    public boolean isConnected(){
+    /**
+     * Determines if an OBD-II device is currently connected.
+     * @return true if connected, false otherwise
+     */
+    private boolean isConnected(){
         return m_Socket != null && m_Socket.isConnected();
     }
 
-    public void disconnect() {
+    /**
+     * Disconnects Bluetooth connection to OBD-II adapter if a connection exists.
+     */
+    private void disconnect() {
         if (isConnected()) {
             try {
                 m_Socket.close();
@@ -119,10 +132,15 @@ public class Bluetooth {
         }
     }
 
+    /**
+     * Returns ObdCommandGroup with all relevant OBD commands
+     * @return ObdCommandGroup with necessary OBD commands for application
+     */
     public ObdCommandGroup getObdCommands(){
         ObdCommandGroup obdCommands = new ObdCommandGroup();
         obdCommands.add(new EchoOffCommand());
         obdCommands.add(new LineFeedOffCommand());
+        int TIMEOUT = 500;
         obdCommands.add(new TimeoutCommand(TIMEOUT));
         obdCommands.add(new SelectProtocolCommand(ObdProtocols.AUTO));
         obdCommands.add(new AmbientAirTemperatureCommand());
@@ -137,33 +155,32 @@ public class Bluetooth {
         return obdCommands;
     }
 
+    /**
+     * Uses Bluetooth to retrieve current vehicle engine RPM
+     * @return engine RPM as formatted string of "[1234] RPM"
+     */
     public String getRPM(){
         RPMCommand rpm = new RPMCommand();
         try {
             rpm.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
             int rpmValue = rpm.getRPM();
-            String result = rpmValue + " RPM";
-            return result;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch(UnknownErrorException e){
+            return rpmValue + " RPM";
+        } catch (IOException | InterruptedException | UnknownErrorException e) {
             e.printStackTrace();
         }
         return "";
     }
 
+    /**
+     * Uses Bluetooth to retrieve current throttle position percentage
+     * @return Throttle position as a formatted string
+     */
     public String getThrottlePosition(){
         ThrottlePositionCommand throttlePosition = new ThrottlePositionCommand();
         try {
             throttlePosition.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
             return throttlePosition.getFormattedResult();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch(UnknownErrorException e){
+        } catch (IOException | UnknownErrorException | InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -171,6 +188,11 @@ public class Bluetooth {
     }
 
     //Boost = (Intake manifold absolute pressure) - (absolute barometric pressure)
+    /**
+     * Uses formula of (Boost = (Intake manifold absolute pressure) - (absolute barometric pressure))
+     * and Bluetooth commands to retrieve current data
+     * @return String of formatted boost pressure in PSI
+     */
     public String getBoost(){
 
         BarometricPressureCommand barometricPressure = new BarometricPressureCommand();
@@ -195,64 +217,56 @@ public class Bluetooth {
                 result = intakeDouble - barometricDouble;
                 if(result < 0.00)
                     result = 0.00;
-                return String.format("%.2f PSI", result);
+                return String.format(Locale.US, "%.2f PSI", result);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch(UnknownErrorException e){
+        } catch (IOException | UnknownErrorException | InterruptedException e) {
             e.printStackTrace();
         }
         return "";
     }
 
+    /**
+     * Gets current vehicle speed in RPM via Bluetooth
+     * @return Vehicle speed in MPH
+     */
     public String getSpeed(){
         SpeedCommand speed = new SpeedCommand();
         try {
             speed.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-            String calculatedResult = String.format("%.2f MPH", speed.getImperialSpeed());
-            return calculatedResult;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch(UnknownErrorException e){
+            return String.format(Locale.US,"%.2f MPH", speed.getImperialSpeed());
+        } catch (IOException | UnknownErrorException | InterruptedException e) {
             e.printStackTrace();
         }
         return "";
     }
 
-    public boolean readyToUpdate(){
-        Log.d(TAG, "In ready to update");
-        return (m_Socket != null && m_Socket.isConnected());
-    }
-
+    /**
+     * Disables echoing of data from OBD-II adapter
+     */
     public void runEchoOffCommand() {
         EchoOffCommand echoOff = new EchoOffCommand();
         try {
             echoOff.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Returns OBD-II trouble codes/PIDs using Bluetooth command
+     * @return String formatted with OBD-II trouble codes
+     */
     public String getTroubleCodes(){
         TroubleCodesCommand troubles = new TroubleCodesCommand();
 
         try{
             troubles.run(m_Socket.getInputStream(), m_Socket.getOutputStream());
-            String result = troubles.getResult();
 
-            return result;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+            return troubles.getResult();
+        } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
         return "";

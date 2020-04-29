@@ -5,8 +5,11 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import androidx.annotation.Nullable;
-
+/**
+ * Handles database management for application. Every vehicle speed
+ * and engine RPM data reading is sent to the database, as well as every recorded trouble code
+ * @author Charles Tyson
+ */
 public class DatabaseHandler extends SQLiteOpenHelper {
     public DatabaseHandler(Context context) {
         super(context, "SpeedDatabase", null, 1);
@@ -30,6 +33,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    /**
+     * Inserts OBD-II trouble codes into the database
+     * @param timeVal Date and time of trouble code retrieval
+     * @param codes Formatted string of trouble codes
+     */
     public void insertTroubleCodes(String timeVal, String codes){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues troubleCodesContentValues = new ContentValues();
@@ -38,6 +46,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.insert("troubleCodesTable", null, troubleCodesContentValues);
     }
 
+    /**
+     * Inserts passed speed and RPM into proper tables with passed in date and time
+     * @param TimeVal date and time of data retrieval
+     * @param SpeedVal speed in MPH
+     * @param RPMVal Engine RPMs
+     */
     public void insertToDatabase(long TimeVal, double SpeedVal, int RPMVal){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues speedTableContentValues = new ContentValues();
@@ -52,6 +66,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.insert("RPMTable", null, rpmTableContentValues);
     }
 
+    /**
+     * Drops all tables from the database
+     * @param db Database to drop tables from
+     */
     public void dropTables(SQLiteDatabase db){
         db.execSQL("DROP TABLE IF EXISTS SpeedTable");
         db.execSQL("DROP TABLE IF EXISTS RPMTable");

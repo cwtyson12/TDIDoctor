@@ -3,10 +3,12 @@ package com.example.charl.tdidoctorv2;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+/**
+ * Used to handle switching between tabs in application without loss of data transmission or stored data.
+ */
 public class PageAdapter extends FragmentStateAdapter {
     private int numTabs;
 

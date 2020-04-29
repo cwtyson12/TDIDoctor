@@ -1,19 +1,15 @@
 package com.example.charl.tdidoctorv2;
 
+import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -22,32 +18,27 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
-
-import org.w3c.dom.Text;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * A {@link Fragment} subclass used to control the Gauges tab of the application.
  */
 public class GaugesFragment extends Fragment {
-    LinearLayout layout;
-    TextView tvRPM;
-    TextView tvBoost;
-    TextView tvSpeed;
-    TextView tvThrottlePosition;
-    Button updateValuesButton;
-    Button createBluetoothButton;
-    Bluetooth bluetooth;
-    ProgressBar bluetoothProgressBar;
-    volatile boolean stopCollecting = true;
-    DatabaseHandler dbh;
-    SQLiteDatabase sqLiteDatabase;
+    private LinearLayout layout;
+    private TextView tvRPM;
+    private TextView tvBoost;
+    private TextView tvSpeed;
+    private TextView tvThrottlePosition;
+    private Button updateValuesButton;
+    private Button createBluetoothButton;
+    private Bluetooth bluetooth;
+    private ProgressBar bluetoothProgressBar;
+    private volatile boolean stopCollecting = true;
+    private DatabaseHandler dbh;
+    private SQLiteDatabase sqLiteDatabase;
 
 
     private Handler mainHandler = new Handler();
@@ -61,98 +52,92 @@ public class GaugesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_gauges, container, false);
-        layout = (LinearLayout) view.findViewById(R.id.gaugesLayout);
-        updateValuesButton = (Button) view.findViewById(R.id.updateValuesButton);
-        createBluetoothButton = (Button) view.findViewById(R.id.createBluetoothButton);
-        tvRPM = (TextView) view.findViewById(R.id.RPMValue);
-        tvBoost = (TextView) view.findViewById(R.id.BoostValue);
-        tvSpeed = (TextView) view.findViewById(R.id.SpeedValue);
-        tvThrottlePosition = (TextView) view.findViewById(R.id.ThrottlePositionValue);
-        bluetoothProgressBar = (ProgressBar) view.findViewById(R.id.BluetoothProgressBar);
+        layout = view.findViewById(R.id.gaugesLayout);
+        updateValuesButton = view.findViewById(R.id.updateValuesButton);
+        createBluetoothButton = view.findViewById(R.id.createBluetoothButton);
+        tvRPM = view.findViewById(R.id.RPMValue);
+        tvBoost = view.findViewById(R.id.BoostValue);
+        tvSpeed = view.findViewById(R.id.SpeedValue);
+        tvThrottlePosition = view.findViewById(R.id.ThrottlePositionValue);
+        bluetoothProgressBar = view.findViewById(R.id.BluetoothProgressBar);
 
         dbh = new DatabaseHandler(getActivity());
         sqLiteDatabase = dbh.getWritableDatabase();
         dbh.dropTables(sqLiteDatabase);
 
-        createBluetoothButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                bluetooth = new Bluetooth(getActivity());
-                Thread thread = new Thread(){
-                    @Override
-                    public void run() {
-                        mainHandler.post(new Runnable(){
-                            @Override
-                            public void run() {
-                                bluetoothProgressBar.setVisibility(View.VISIBLE);
-                                createBluetoothButton.setEnabled(false);
-                            }
-                        });
+        createBluetoothButton.setOnClickListener(v -> {
+            bluetooth = new Bluetooth(getActivity());
+            Thread thread = new Thread(){
+                @Override
+                public void run() {
+                    mainHandler.post(new Runnable(){
+                        @Override
+                        public void run() {
+                            bluetoothProgressBar.setVisibility(View.VISIBLE);
+                            createBluetoothButton.setEnabled(false);
+                        }
+                    });
 
-                        bluetooth.setupDevice();
-                        if(bluetooth.foundDevice()) {
-                            boolean ableToConnect = bluetooth.connect();
-                            if(!ableToConnect){
-                                mainHandler.post(new Runnable(){
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getActivity(), "Unable to establish Bluetooth connection", Toast.LENGTH_LONG).show();
-                                        bluetoothProgressBar.setVisibility(View.GONE);
-                                    }
-                                });
-                            }
-                            else{
-                                bluetooth.runEchoOffCommand();
-                                mainHandler.post(new Runnable(){
-                                    @Override
-                                    public void run() {
-                                        bluetoothProgressBar.setVisibility(View.GONE);
-                                    }
-                                });
-                            }
+                    bluetooth.setupDevice();
+                    if(bluetooth.foundDevice()) {
+                        boolean ableToConnect = bluetooth.connect();
+                        if(!ableToConnect){
                             mainHandler.post(new Runnable(){
                                 @Override
                                 public void run() {
-                                    createBluetoothButton.setEnabled(!ableToConnect);
-                                    updateValuesButton.setEnabled(ableToConnect);
+                                    Toast.makeText(getActivity(), "Unable to establish Bluetooth connection", Toast.LENGTH_LONG).show();
+                                    bluetoothProgressBar.setVisibility(View.GONE);
                                 }
                             });
                         }
+                        else{
+                            bluetooth.runEchoOffCommand();
+                            mainHandler.post(new Runnable(){
+                                @Override
+                                public void run() {
+                                    bluetoothProgressBar.setVisibility(View.GONE);
+                                }
+                            });
+                        }
+                        mainHandler.post(new Runnable(){
+                            @Override
+                            public void run() {
+                                createBluetoothButton.setEnabled(!ableToConnect);
+                                updateValuesButton.setEnabled(ableToConnect);
+                            }
+                        });
                     }
-                };
-                thread.start();
-            }
+                }
+            };
+            thread.start();
         });
 
-        updateValuesButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                stopCollecting = !stopCollecting;
+        updateValuesButton.setOnClickListener(v -> {
+            stopCollecting = !stopCollecting;
 
-                if(!stopCollecting){
-                    updateValuesButton.setText("Stop Collecting");
-                    UpdateThread updateThread = new UpdateThread();
-                    new Thread(updateThread).start();
+            if(!stopCollecting){
+                updateValuesButton.setText("Stop Collecting");
+                UpdateThread updateThread = new UpdateThread();
+                new Thread(updateThread).start();
 
-                    String codes = bluetooth.getTroubleCodes();
+                String codes = bluetooth.getTroubleCodes();
 
-                    long currTime = new Date().getTime();
+                long currTime = new Date().getTime();
 
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss a", Locale.US);
-                    String dateTime = sdf.format(currTime);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss a", Locale.US);
+                String dateTime = sdf.format(currTime);
 
-                    dbh.insertTroubleCodes(dateTime, codes);
-                }
-                else{
-                    updateValuesButton.setText("Begin Tracking");
-                }
+                dbh.insertTroubleCodes(dateTime, codes);
+            }
+            else{
+                updateValuesButton.setText("Begin Tracking");
             }
         });
 
         return view;
     }
 
-    boolean detectLSPINotUpdatingValues(){
+    private boolean detectLSPINotUpdatingValues(){
         String boostValueString = tvBoost.getText().toString();
         String rpmValueString = tvRPM.getText().toString();
         String speedValueString = tvSpeed.getText().toString();
@@ -182,10 +167,7 @@ public class GaugesFragment extends Fragment {
             Log.e("Gauges Fragment", "Number format exception for speed value conversion to double");
         }
 
-        if(speedValue > 45 && boostValue > 5 && rpmValue < 3500)
-            return true;
-
-        return false;
+        return speedValue > 45 && boostValue > 5 && rpmValue < 3500;
     }
 
     class UpdateThread implements Runnable {
@@ -207,30 +189,27 @@ public class GaugesFragment extends Fragment {
                     String speed = bluetooth.getSpeed();
                     String throttlePosition = bluetooth.getThrottlePosition();
 
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(!rpm.equals("")){
-                                tvRPM.setText(rpm);
-                            }
-                            if(!boost.equals(""))
-                                tvBoost.setText(boost);
-                            if(!speed.equals("")){
-                                tvSpeed.setText(speed);
-                            }
-                            if(!throttlePosition.equals(""))
-                            tvThrottlePosition.setText(throttlePosition);
+                    mainHandler.post(() -> {
+                        if(!rpm.equals("")){
+                            tvRPM.setText(rpm);
+                        }
+                        if(!boost.equals(""))
+                            tvBoost.setText(boost);
+                        if(!speed.equals("")){
+                            tvSpeed.setText(speed);
+                        }
+                        if(!throttlePosition.equals(""))
+                        tvThrottlePosition.setText(throttlePosition);
 
-                            boolean lspi = detectLSPINotUpdatingValues();
-                            if(lspi){
-                                layout.setBackgroundColor(getResources().getColor(R.color.LSPI));
-                            }
-                            else{
-                                layout.setBackgroundColor(Color.WHITE);
-                                tvRPM.setTextColor(getResources().getColor(R.color.noLSPI));
-                                tvBoost.setTextColor(getResources().getColor(R.color.noLSPI));
-                                tvSpeed .setTextColor(getResources().getColor(R.color.noLSPI));
-                            }
+                        boolean lspi = detectLSPINotUpdatingValues();
+                        if(lspi){
+                            layout.setBackgroundColor(getResources().getColor(R.color.LSPI));
+                        }
+                        else{
+                            layout.setBackgroundColor(Color.WHITE);
+                            tvRPM.setTextColor(getResources().getColor(R.color.noLSPI));
+                            tvBoost.setTextColor(getResources().getColor(R.color.noLSPI));
+                            tvSpeed .setTextColor(getResources().getColor(R.color.noLSPI));
                         }
                     });
 
@@ -257,10 +236,6 @@ public class GaugesFragment extends Fragment {
                 }
 
             }
-        }
-
-        public void insertData(){
-
         }
     }
 }

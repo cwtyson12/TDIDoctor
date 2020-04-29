@@ -8,7 +8,6 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.os.Debug;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +26,7 @@ import java.util.Locale;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * A {@link Fragment} subclass used to control the Extras tab of the application.
  */
 public class HistoryFragment extends Fragment {
     private GraphView speedGraph;
@@ -35,28 +34,25 @@ public class HistoryFragment extends Fragment {
 
     private Dialog troubleCodesDialog;
 
-    private Button getSpeedValuesButton;
-    private Button getTroubleCodesButton;
-    DatabaseHandler dbh;
-    SQLiteDatabase sqLiteDatabase;
-    LineGraphSeries<DataPoint> speedDataSeries = new LineGraphSeries<DataPoint>(new DataPoint[0]);
-    LineGraphSeries<DataPoint> rpmDataSeries = new LineGraphSeries<DataPoint>(new DataPoint[0]);
+    private DatabaseHandler dbh;
+    private SQLiteDatabase sqLiteDatabase;
+    private LineGraphSeries<DataPoint> speedDataSeries = new LineGraphSeries<>(new DataPoint[0]);
+    private LineGraphSeries<DataPoint> rpmDataSeries = new LineGraphSeries<>(new DataPoint[0]);
 
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm:ss");
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm:ss", Locale.US);
 
 
     public HistoryFragment() {
         // Required empty public constructor
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history, container, false);
-        speedGraph = (GraphView) view.findViewById(R.id.SpeedGraphView);
-        rpmGraph = (GraphView) view.findViewById(R.id.RPMGraphView);
-        getSpeedValuesButton = (Button) view.findViewById(R.id.GetValuesButton);
-        getTroubleCodesButton = (Button) view.findViewById(R.id.GetTroubleCodesButton);
+        speedGraph = view.findViewById(R.id.SpeedGraphView);
+        rpmGraph = view.findViewById(R.id.RPMGraphView);
+        Button getSpeedValuesButton = view.findViewById(R.id.GetValuesButton);
+        Button getTroubleCodesButton = view.findViewById(R.id.GetTroubleCodesButton);
 
         troubleCodesDialog = new Dialog(getActivity());
 
@@ -83,12 +79,12 @@ public class HistoryFragment extends Fragment {
         getSpeedValuesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                speedDataSeries = new LineGraphSeries<DataPoint>(getSpeedData());
+                speedDataSeries = new LineGraphSeries<>(getSpeedData());
                 speedGraph.removeAllSeries();
                 speedGraph.addSeries(speedDataSeries);
                 speedGraph.onDataChanged(true,false);
 
-                rpmDataSeries = new LineGraphSeries<DataPoint>(getRPMData());
+                rpmDataSeries = new LineGraphSeries<>(getRPMData());
                 rpmGraph.removeAllSeries();
                 rpmGraph.addSeries(rpmDataSeries);
                 rpmGraph.onDataChanged(true,false);
@@ -122,33 +118,31 @@ public class HistoryFragment extends Fragment {
             }
         });
 
-        getTroubleCodesButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                troubleCodesDialog.setContentView(R.layout.trouble_codes_popup_window);
-                Button closeButton;
-                closeButton = (Button) troubleCodesDialog.findViewById(R.id.closeTroubleCodes);
-                TextView codesTV;
-                codesTV = (TextView) troubleCodesDialog.findViewById(R.id.troubleCodesTV);
-                Log.d("HistoryFragment", "codesTV == null: " + (codesTV == null));
+        getTroubleCodesButton.setOnClickListener(v -> {
+            troubleCodesDialog.setContentView(R.layout.trouble_codes_popup_window);
+            Button closeButton;
+            closeButton = troubleCodesDialog.findViewById(R.id.closeTroubleCodes);
+            TextView codesTV;
+            codesTV = troubleCodesDialog.findViewById(R.id.troubleCodesTV);
+            Log.d("HistoryFragment", "codesTV == null: " + (codesTV == null));
 
-                String[] columns = {"time", "codes"};
-                @SuppressLint("Recycle") Cursor cursor = sqLiteDatabase.query("troubleCodesTable", columns, null, null, null, null, null);
-                cursor.moveToNext();
-                String formattedTime = cursor.getString(0);
-                String codesText = cursor.getString(1);
+            String[] columns = {"time", "codes"};
+            @SuppressLint("Recycle") Cursor cursor = sqLiteDatabase.query("troubleCodesTable", columns, null, null, null, null, null);
+            cursor.moveToNext();
+            String formattedTime = cursor.getString(0);
+            String codesText = cursor.getString(1);
 
+            String result = "Codes for " + formattedTime;
+            result += ":\n\n" + (codesText.equals("[]") ? "None" : codesText);
 
-                codesTV.setText("Codes for " + formattedTime + ":\n\n" + (codesText.equals("[]") ? "None" : codesText
-                ));
-                closeButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        troubleCodesDialog.dismiss();
-                    }
-                });
-                troubleCodesDialog.show();
-            }
+            codesTV.setText(result);
+            closeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    troubleCodesDialog.dismiss();
+                }
+            });
+            troubleCodesDialog.show();
         });
 
         return view;

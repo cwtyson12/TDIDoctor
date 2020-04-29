@@ -9,6 +9,10 @@
     android:paddingLeft="16dp"
     android:paddingTop="16dp"
     tools:context=".HistoryFragment">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Speed Graph:"/>
     <com.jjoe64.graphview.GraphView
         android:layout_width="wrap_content"
         android:layout_height="200dip"
@@ -16,10 +20,14 @@
 
     </com.jjoe64.graphview.GraphView>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RPM Graph:"
+        android:layout_marginTop="16dp"/>
     <com.jjoe64.graphview.GraphView
         android:layout_width="wrap_content"
         android:layout_height="200dip"
-        android:layout_marginTop="16dp"
         android:id="@+id/RPMGraphView">
 
     </com.jjoe64.graphview.GraphView>

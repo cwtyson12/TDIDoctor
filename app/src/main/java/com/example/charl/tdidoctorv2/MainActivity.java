@@ -4,16 +4,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
-import android.widget.Toast;
 
 import com.google.android.material.tabs.TabItem;
 import com.google.android.material.tabs.TabLayout;
 
+/**
+ * Initializes the application, as well as the fragments and ViewPager and PageAdapter to switch between them.
+ */
 public class MainActivity extends AppCompatActivity {
 
-    private TabLayout tabLayout;
     private ViewPager2 viewPager;
-    private TabItem gauges, history;
     private PageAdapter pageAdapter;
 
     @Override
@@ -21,11 +21,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tabLayout = (TabLayout) findViewById(R.id.tablayout);
-        gauges = (TabItem) findViewById(R.id.Gauges);
-        history = (TabItem) findViewById(R.id.Extras);
+        TabLayout tabLayout = findViewById(R.id.tablayout);
+        TabItem gauges = findViewById(R.id.Gauges);
+        TabItem history = findViewById(R.id.Extras);
 
-        viewPager = (ViewPager2) findViewById(R.id.viewpager);
+        viewPager = findViewById(R.id.viewpager);
         viewPager.setUserInputEnabled(false);   //disable swiping
 
 
