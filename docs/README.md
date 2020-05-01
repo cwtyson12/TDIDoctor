@@ -27,11 +27,11 @@ Using TDIDoctor is very simple. These are the steps you must take to use the app
 
 ## Stakeholder Analysis
 TDIDoctor has a fairly limited but also wide-reaching audience. The application appeals to: 
-* Automotive manufacturers
-	* TDIDoctor ensures that their OBD-II port transmits data as it should (even in vehicles without TDI engines)
-	* TDIDoctor can be used to record acceleration rates, shift times in automatic vehicles, and many more
-* Car Enthusiasts
-	* Many people with TDI-equipped vehicles are car enthusiasts due to its high power density capabilities. Car enthusiasts are much more likely to be aware of LSPI than passive vehicle owners, and this application could prevent enthusiasts from damaging their vehicle from highway driving, track days, etc.
-* TDI Drivers
-	* Even drivers of TDI-equipped vehicles that are not car enthusiasts will get much out of this application. The application will allow them to be more connected with their vehicle, as well as increase their vehicle's longevity like previously stated. 
+- Automotive manufacturers
+	- TDIDoctor ensures that their OBD-II port transmits data as it should (even in vehicles without TDI engines)
+	- TDIDoctor can be used to record acceleration rates, shift times in automatic vehicles, and many more
+- Car Enthusiasts
+	- Many people with TDI-equipped vehicles are car enthusiasts due to its high power density capabilities. Car enthusiasts are much more likely to be aware of LSPI than passive vehicle owners, and this application could prevent enthusiasts from damaging their vehicle from highway driving, track days, etc.
+- TDI Drivers
+	- Even drivers of TDI-equipped vehicles that are not car enthusiasts will get much out of this application. The application will allow them to be more connected with their vehicle, as well as increase their vehicle's longevity like previously stated. 
 ## Testing and Analysis Results
