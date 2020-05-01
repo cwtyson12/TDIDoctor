@@ -34,4 +34,18 @@ TDIDoctor has a fairly limited but also wide-reaching audience. The application 
 	- Many people with TDI-equipped vehicles are car enthusiasts due to its high power density capabilities. Car enthusiasts are much more likely to be aware of LSPI than passive vehicle owners, and this application could prevent enthusiasts from damaging their vehicle from highway driving, track days, etc.
 - TDI Drivers
 	- Even drivers of TDI-equipped vehicles that are not car enthusiasts will get much out of this application. The application will allow them to be more connected with their vehicle, as well as increase their vehicle's longevity like previously stated. 
+
 ## Testing and Analysis Results
+Testing this project alone is difficult. Much of my testing involved me sitting alone in my car with my computer and test device for hours at a time, restarting my car often to test code changes. These are the results I got from testing, ordered chronologically:
+* My original test device screen was not fully operational
+* Updates would take so long to return that they were not useful
+* Asynchronous Bluetooth transmission was necessary to not block the UI and to update continuously
+* Turbocharger pressure reading is not built into OBD-II
+	* I had to use a formula to determine turbocharger pressure. The formula is: (Turbocharger pressure) = (intake manifold pressure) - (absolute air pressure)
+* My original LSPI detection algorithm bounds were not safe enough to prevent the issue
+* Storing vehicle data as raw text was not the proper way to go
+	* This is why I decided to use a SQLite database to manage data storage
+* Creating graphs to display data in vanilla Android is nearly impossible
+* OBD-II trouble code PIDs were not returning in a properly formatted string
+* The extra, non-essential application pieces I wanted to incorporate were not feasible by my presentation date
+* I had to create documentation!
