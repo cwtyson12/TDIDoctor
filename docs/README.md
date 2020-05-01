@@ -5,7 +5,6 @@ TDIDoctor is an Android solution to the modern problem of low-speed pre-ignition
 * System Vision
 * Instructions
 * Stakeholder Analysis
-* GUI Mockups
 * Testing and Analysis Results
 * Viewing JavaDoc
 
